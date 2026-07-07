@@ -26,6 +26,12 @@ Assert-Command $Python "Install Python 3.12 or 3.13, then reopen PowerShell."
 Assert-Command "curl" "Install curl or use a PowerShell version that includes curl."
 
 & $Python --version
+@'
+import sys
+if sys.version_info < (3, 12):
+    raise SystemExit("Python 3.12 or newer is required.")
+'@ | & $Python -
+
 if ($CloneLeRobot) {
     Assert-Command "git" "Install Git from https://git-scm.com/downloads, then reopen PowerShell."
     & git --version
@@ -57,11 +63,11 @@ if ($CloneLeRobot) {
         git -C $LeRobotDir checkout $LeRobotRef
     }
 
-    $lerobotDatasetSpec = "$LeRobotDir[dataset]"
+    $lerobotDatasetSpec = "${LeRobotDir}[dataset]"
     & $venvPython -m pip install -e $lerobotDatasetSpec
 
     if ($InstallViz) {
-        $lerobotVizSpec = "$LeRobotDir[dataset_viz]"
+        $lerobotVizSpec = "${LeRobotDir}[dataset_viz]"
         & $venvPython -m pip install -e $lerobotVizSpec
     }
 }

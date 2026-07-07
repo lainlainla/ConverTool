@@ -9,46 +9,91 @@
 - 修复 RoboCOIN hotel 数据里已发现的 v3 兼容问题
 - 做 oracle differential validation 和人工边界检查
 
-## 从空机器开始
+## 支持平台
 
-下面以 Windows PowerShell 为例。新机器至少需要：
+支持 Windows、Linux、macOS。
+
+| 平台 | 环境脚本 | 运行脚本 |
+| --- | --- | --- |
+| Windows PowerShell | `setup_env.ps1` | `run_all.ps1` |
+| Linux Bash | `setup_env.sh` | `run_all.sh` |
+| macOS Bash/Zsh | `setup_env.sh` | `run_all.sh` |
+
+主逻辑在 `robocoin_hotel_convert.py` 中，平台差异只在环境初始化和入口脚本。
+
+## 系统依赖
+
+空机器至少需要：
 
 - Python 3.12 或 3.13
 - Git
 - curl
 - 足够磁盘空间。`--preset all` 会下载和转换多个视频数据集，建议准备较大的独立数据盘。
 
-如果机器没有 Python 和 Git，可以先用 `winget` 安装：
+Windows 安装示例：
 
 ```powershell
 winget install -e --id Python.Python.3.12
 winget install -e --id Git.Git
 ```
 
-安装后重新打开 PowerShell。
+Ubuntu/Debian 安装示例：
 
-进入工具目录：
+```bash
+sudo apt update
+sudo apt install -y python3 python3-venv git curl
+```
+
+macOS 安装示例：
+
+```bash
+brew install python git curl
+```
+
+安装系统依赖后，重新打开终端。
+
+## Windows 从零配置
 
 ```powershell
 cd converTool
-```
-
-创建虚拟环境、安装本工具依赖、clone LeRobot、安装 LeRobot dataset/viz 依赖：
-
-```powershell
 Set-ExecutionPolicy -Scope Process Bypass
 .\setup_env.ps1 -CloneLeRobot -InstallViz
 .\.venv\Scripts\Activate.ps1
 ```
 
-如果不需要人工可视化，可以去掉 `-InstallViz`：
+不需要人工可视化时可以去掉 `-InstallViz`：
 
 ```powershell
 .\setup_env.ps1 -CloneLeRobot
 .\.venv\Scripts\Activate.ps1
 ```
 
-脚本默认会把 LeRobot clone 到：
+## Linux/macOS 从零配置
+
+如果脚本没有执行权限，可以直接用 `bash` 运行：
+
+```bash
+cd converTool
+bash setup_env.sh --clone-lerobot --install-viz
+source .venv/bin/activate
+```
+
+或者先加执行权限：
+
+```bash
+chmod +x setup_env.sh run_all.sh
+./setup_env.sh --clone-lerobot --install-viz
+source .venv/bin/activate
+```
+
+不需要人工可视化时可以去掉 `--install-viz`：
+
+```bash
+bash setup_env.sh --clone-lerobot
+source .venv/bin/activate
+```
+
+默认会把 LeRobot clone 到：
 
 ```text
 converTool/_deps/lerobot
@@ -58,15 +103,15 @@ converTool/_deps/lerobot
 
 ## Hugging Face 登录
 
-登录 Hugging Face：
+Windows、Linux、macOS 命令相同：
 
-```powershell
+```bash
 hf auth login
 ```
 
-如果你的环境没有 `hf` 命令，也可以用：
+如果环境没有 `hf` 命令，也可以用：
 
-```powershell
+```bash
 huggingface-cli login
 ```
 
@@ -91,7 +136,7 @@ Read access to contents of all public gated repos you can access
 
 ## 内置数据集
 
-默认 `--preset all` 会处理下面全部 repo：
+默认 `all` 会处理下面全部 repo：
 
 ```text
 RoboCOIN/Leju_Kuavo_4_hotel_services
@@ -115,8 +160,8 @@ RoboCOIN/leju_robot_hotel_services_ab
 
 查看 preset 名称：
 
-```powershell
-python .\robocoin_hotel_convert.py --list-presets
+```bash
+python robocoin_hotel_convert.py --list-presets
 ```
 
 ## 输出目录
@@ -139,15 +184,25 @@ datasets/leju_robot_hotel_services_h_v30
 
 ## Dry Run
 
-正式下载前先检查执行计划：
+正式下载前先检查执行计划。
+
+Windows：
 
 ```powershell
 .\run_all.ps1 -Preset all -OutputRoot .\datasets -DryRun
 ```
 
-如果使用 `setup_env.ps1 -CloneLeRobot`，工具会自动找到 `.\_deps\lerobot\src`，不需要手动传 `-LeRobotSrc`。
+Linux/macOS：
 
-如果你已经有自己的 LeRobot 源码，可以指定：
+```bash
+bash run_all.sh --preset all --output-root ./datasets --dry-run
+```
+
+如果使用默认 `setup_env` 脚本 clone LeRobot，工具会自动找到 `./_deps/lerobot/src`，不需要手动传 LeRobot 路径。
+
+如果你已经有自己的 LeRobot 源码，可以指定。
+
+Windows：
 
 ```powershell
 .\run_all.ps1 `
@@ -157,15 +212,35 @@ datasets/leju_robot_hotel_services_h_v30
   -DryRun
 ```
 
+Linux/macOS：
+
+```bash
+bash run_all.sh \
+  --preset all \
+  --output-root ./datasets \
+  --lerobot-src /path/to/lerobot/src \
+  --dry-run
+```
+
 ## 一键下载、转换、验证
 
-处理全部内置数据集：
+处理全部内置数据集。
+
+Windows：
 
 ```powershell
 .\run_all.ps1 -Preset all -OutputRoot .\datasets
 ```
 
-单独处理一个数据集：
+Linux/macOS：
+
+```bash
+bash run_all.sh --preset all --output-root ./datasets
+```
+
+单独处理一个数据集。
+
+Windows：
 
 ```powershell
 .\run_all.ps1 -Preset kuavo4_hotel_services -OutputRoot .\datasets
@@ -173,7 +248,17 @@ datasets/leju_robot_hotel_services_h_v30
 .\run_all.ps1 -Preset leju_robot_hotel_services_a -OutputRoot .\datasets
 ```
 
-如果直连 `huggingface.co` 不稳定，可以强制使用 mirror：
+Linux/macOS：
+
+```bash
+bash run_all.sh --preset kuavo4_hotel_services --output-root ./datasets
+bash run_all.sh --preset leju_robot_hotel_services_h --output-root ./datasets
+bash run_all.sh --preset leju_robot_hotel_services_a --output-root ./datasets
+```
+
+如果直连 `huggingface.co` 不稳定，可以强制使用 mirror。
+
+Windows：
 
 ```powershell
 .\run_all.ps1 `
@@ -183,9 +268,21 @@ datasets/leju_robot_hotel_services_h_v30
   -MirrorEndpoint https://hf-mirror.com
 ```
 
+Linux/macOS：
+
+```bash
+bash run_all.sh \
+  --preset all \
+  --output-root ./datasets \
+  --download-backend curl \
+  --mirror-endpoint https://hf-mirror.com
+```
+
 ## 自定义 RoboCOIN Hotel Repo
 
-如果后续出现同格式新 repo：
+如果后续出现同格式新 repo。
+
+Windows：
 
 ```powershell
 python .\robocoin_hotel_convert.py `
@@ -194,6 +291,17 @@ python .\robocoin_hotel_convert.py `
   --cameras observation.images.camera_head_rgb,observation.images.camera_left_wrist_rgb,observation.images.camera_right_wrist_rgb `
   --probe-episodes 0,1,2,10 `
   --output-root .\datasets
+```
+
+Linux/macOS：
+
+```bash
+python robocoin_hotel_convert.py \
+  --repo-id RoboCOIN/your_dataset \
+  --local-name your_dataset \
+  --cameras observation.images.camera_head_rgb,observation.images.camera_left_wrist_rgb,observation.images.camera_right_wrist_rgb \
+  --probe-episodes 0,1,2,10 \
+  --output-root ./datasets
 ```
 
 ## 自动兼容性修复
@@ -221,33 +329,55 @@ python .\robocoin_hotel_convert.py `
 - 抽样 decoded video frame MAE 对比
 - `DataLoader` + `delta_timestamps` temporal window smoke test
 
-如果只想快速转换，跳过视频 oracle：
+跳过视频 oracle。
+
+Windows：
 
 ```powershell
 .\run_all.ps1 -Preset all -OutputRoot .\datasets -SkipVideoValidate
 ```
 
-如果只做基础加载，不做 oracle：
+Linux/macOS：
+
+```bash
+bash run_all.sh --preset all --output-root ./datasets --skip-video-validate
+```
+
+只做基础加载，不做 oracle。
+
+Windows：
 
 ```powershell
 .\run_all.ps1 -Preset all -OutputRoot .\datasets -SkipOracleValidate
 ```
 
+Linux/macOS：
+
+```bash
+bash run_all.sh --preset all --output-root ./datasets --skip-oracle-validate
+```
+
 ## 人工边界检查
 
-如果环境创建时没有安装可视化依赖，先安装：
+如果环境创建时没有安装可视化依赖，先安装。
+
+Windows：
 
 ```powershell
 python -m pip install -r requirements-viz.txt
-```
-
-如果 LeRobot 是通过 `setup_env.ps1 -CloneLeRobot` 安装的：
-
-```powershell
 $env:PYTHONPATH=(Resolve-Path ".\_deps\lerobot\src").Path + ";" + $env:PYTHONPATH
 ```
 
-人工检查 Kuavo 4 格式：
+Linux/macOS：
+
+```bash
+python -m pip install -r requirements-viz.txt
+export PYTHONPATH="$(pwd)/_deps/lerobot/src:${PYTHONPATH:-}"
+```
+
+人工检查 Kuavo 4 格式。
+
+Windows：
 
 ```powershell
 $root=(Resolve-Path ".\datasets\Leju_Kuavo_4_hotel_services_v30").Path
@@ -259,7 +389,21 @@ python -m lerobot.scripts.lerobot_dataset_viz `
   --episode-index 0
 ```
 
-人工检查 leju_robot hotel-services 格式：
+Linux/macOS：
+
+```bash
+root="$(pwd)/datasets/Leju_Kuavo_4_hotel_services_v30"
+
+python -m lerobot.scripts.lerobot_dataset_viz \
+  --repo-id RoboCOIN/Leju_Kuavo_4_hotel_services \
+  --root "$root" \
+  --mode local \
+  --episode-index 0
+```
+
+人工检查 leju_robot hotel-services 格式。
+
+Windows：
 
 ```powershell
 $root=(Resolve-Path ".\datasets\leju_robot_hotel_services_h_v30").Path
@@ -271,12 +415,31 @@ python -m lerobot.scripts.lerobot_dataset_viz `
   --episode-index 0
 ```
 
+Linux/macOS：
+
+```bash
+root="$(pwd)/datasets/leju_robot_hotel_services_h_v30"
+
+python -m lerobot.scripts.lerobot_dataset_viz \
+  --repo-id RoboCOIN/leju_robot_hotel_services_h \
+  --root "$root" \
+  --mode local \
+  --episode-index 0
+```
+
 边界 episode 建议：
 
 ```text
 开头: 0 / 1
 中间: total_episodes // 2 附近
 结尾: total_episodes - 2 / total_episodes - 1
+```
+
+已完成两个样例的边界：
+
+```text
+RoboCOIN/Leju_Kuavo_4_hotel_services: 0, 100, 483
+RoboCOIN/leju_robot_hotel_services_h: 0, 100, 204
 ```
 
 重点看：
@@ -289,30 +452,85 @@ python -m lerobot.scripts.lerobot_dataset_viz `
 
 ## 常用参数
 
-强制重跑，删除 output root 下对应旧产物：
+强制重跑。
+
+Windows：
 
 ```powershell
 .\run_all.ps1 -Preset all -OutputRoot .\datasets -Force
 ```
 
-已有下载结果，只重新转换和验证：
+Linux/macOS：
+
+```bash
+bash run_all.sh --preset all --output-root ./datasets --force
+```
+
+已有下载结果，只重新转换和验证。
+
+Windows：
 
 ```powershell
 .\run_all.ps1 -Preset leju_robot_hotel_services_h -OutputRoot .\datasets -SkipDownload
 ```
 
-已有 v3 输出，只重新验证：
+Linux/macOS：
+
+```bash
+bash run_all.sh --preset leju_robot_hotel_services_h --output-root ./datasets --skip-download
+```
+
+已有 v3 输出，只重新验证。
+
+Windows：
 
 ```powershell
 .\run_all.ps1 -Preset leju_robot_hotel_services_h -OutputRoot .\datasets -SkipDownload -SkipConvert
 ```
 
-指定 Python 解释器：
+Linux/macOS：
+
+```bash
+bash run_all.sh --preset leju_robot_hotel_services_h --output-root ./datasets --skip-download --skip-convert
+```
+
+指定 Python 解释器。
+
+Windows：
 
 ```powershell
 .\run_all.ps1 -Python ".\.venv\Scripts\python.exe" -Preset all -OutputRoot .\datasets
 ```
 
+Linux/macOS：
+
+```bash
+bash run_all.sh --python ./.venv/bin/python --preset all --output-root ./datasets
+```
+
+## 目录上传建议
+
+适合上传到 GitHub 的文件：
+
+```text
+README.md
+robocoin_hotel_convert.py
+run_all.ps1
+run_all.sh
+setup_env.ps1
+setup_env.sh
+requirements.txt
+requirements-viz.txt
+.gitignore
+.gitattributes
+```
+
+不要上传：
+
+```text
+datasets/
+_deps/
+.venv/
 __pycache__/
 *.log
 ```
