@@ -1,4 +1,5 @@
 param(
+    [string]$Python = "python",
     [string]$Preset = "all",
     [string]$OutputRoot = ".\datasets",
     [string]$LeRobotSrc = "",
@@ -58,4 +59,4 @@ if ($DryRun) {
     $argsList += "--dry-run"
 }
 
-python @argsList
+& $Python @argsList
