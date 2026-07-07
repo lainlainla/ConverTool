@@ -1,0 +1,8 @@
+huggingface_hub>=0.36.0
+datasets>=4.0.0
+numpy>=2.0.0
+pandas>=2.0.0
+pyarrow>=18.0.0
+torch>=2.0.0
+av>=13.0.0
+tqdm>=4.66.0
