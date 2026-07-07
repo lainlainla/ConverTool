@@ -279,13 +279,6 @@ python -m lerobot.scripts.lerobot_dataset_viz `
 结尾: total_episodes - 2 / total_episodes - 1
 ```
 
-已完成两个样例的边界：
-
-```text
-RoboCOIN/Leju_Kuavo_4_hotel_services: 0, 100, 483
-RoboCOIN/leju_robot_hotel_services_h: 0, 100, 204
-```
-
 重点看：
 
 - episode 末尾是否串到下一集
@@ -320,26 +313,6 @@ RoboCOIN/leju_robot_hotel_services_h: 0, 100, 204
 .\run_all.ps1 -Python ".\.venv\Scripts\python.exe" -Preset all -OutputRoot .\datasets
 ```
 
-## 目录上传建议
-
-适合上传到 GitHub 的文件：
-
-```text
-README.md
-robocoin_hotel_convert.py
-run_all.ps1
-setup_env.ps1
-requirements.txt
-requirements-viz.txt
-.gitignore
-```
-
-不要上传：
-
-```text
-datasets/
-_deps/
-.venv/
 __pycache__/
 *.log
 ```
